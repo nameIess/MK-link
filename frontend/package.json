@@ -1,0 +1,8 @@
+{
+  "name": "mk-link-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {"dev": "vite", "build": "tsc && vite build", "preview": "vite preview"},
+  "devDependencies": {"typescript": "^5.9.2", "vite": "^7.1.7"}
+}
