@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"golang.org/x/sys/windows"
 )
 
 func TestCreateLinks(t *testing.T) {
@@ -21,9 +23,9 @@ func TestCreateLinks(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		typ Type
-		target string
+		name        string
+		typ         Type
+		target      string
 		destination string
 	}{
 		{name: "hardlink", typ: Hardlink, target: targetFile, destination: filepath.Join(root, "hard.txt")},
@@ -31,9 +33,11 @@ func TestCreateLinks(t *testing.T) {
 		{name: "symbolic-directory", typ: Symbolic, target: targetDir, destination: filepath.Join(root, "symbolic-dir")},
 		{name: "junction", typ: Junction, target: targetDir, destination: filepath.Join(root, "junction")},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			plan, err := PlanLink(tt.target, tt.destination, tt.typ)
 			if err != nil {
 				t.Fatalf("PlanLink: %v", err)
@@ -44,22 +48,32 @@ func TestCreateLinks(t *testing.T) {
 				}
 				t.Fatalf("Create: %v", err)
 			}
+
 			info, err := os.Lstat(tt.destination)
 			if err != nil {
 				t.Fatalf("Lstat destination: %v", err)
 			}
+
 			switch tt.typ {
-			case Junction, Symbolic:
-				if info.Mode()&os.ModeSymlink == 0 && tt.typ == Symbolic {
+			case Junction:
+				targetInfo, err := os.Stat(tt.destination)
+				if err != nil {
+					t.Fatalf("junction target resolution: %v", err)
+				}
+				if !targetInfo.IsDir() {
+					t.Fatal("junction did not resolve to a directory")
+				}
+			case Symbolic:
+				if info.Mode()&os.ModeSymlink == 0 {
 					t.Fatal("symbolic link destination is not a symlink")
 				}
 			case Hardlink:
-				infoTarget, err := os.Stat(tt.target)
+				targetInfo, err := os.Stat(tt.target)
 				if err != nil {
 					t.Fatal(err)
 				}
-				if info.Size() != infoTarget.Size() {
-					t.Fatalf("hardlink size = %d, target size = %d", info.Size(), infoTarget.Size())
+				if info.Size() != targetInfo.Size() {
+					t.Fatalf("hardlink size = %d, target size = %d", info.Size(), targetInfo.Size())
 				}
 			}
 		})
