@@ -81,14 +81,14 @@ func Validate(target, linkPath string, typ LinkType) error {
 		if !info.IsDir() {
 			return errors.New("this link type requires a directory target")
 		}
-		if typ == Junction && !sameVolume(targetAbs, linkAbs) {
+		if typ == Junction && !sameVolume(targetAbs, filepath.Dir(linkAbs)) {
 			return errors.New("a junction target and link must be on the same volume")
 		}
 	case HardLink:
 		if info.IsDir() {
 			return errors.New("a hard link requires a file target")
 		}
-		if !sameVolume(targetAbs, linkAbs) {
+		if !sameVolume(targetAbs, filepath.Dir(linkAbs)) {
 			return errors.New("a hard link target and link must be on the same volume")
 		}
 	default:
@@ -126,6 +126,7 @@ var (
 	kernel32 = syscall.NewLazyDLL("kernel32.dll")
 	procCreateSymbolicLinkW = kernel32.NewProc("CreateSymbolicLinkW")
 	procCreateHardLinkW = kernel32.NewProc("CreateHardLinkW")
+	procCreateDirectoryW = kernel32.NewProc("CreateDirectoryW")
 	procCreateFileW = kernel32.NewProc("CreateFileW")
 	procDeviceIoControl = kernel32.NewProc("DeviceIoControl")
 	procCloseHandle = kernel32.NewProc("CloseHandle")
@@ -175,6 +176,11 @@ func createHardLink(link, target string) error {
 }
 
 func createJunction(link, target string) error {
+	createdDir := true
+	if r, _, err := procCreateDirectoryW.Call(uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(link))), 0); r == 0 {
+		createdDir = false
+		return winError("create junction directory", err)
+	}
 	handle, _, err := procCreateFileW.Call(
 		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(link))),
 		genericRead|genericWrite,
@@ -232,6 +238,7 @@ func createJunction(link, target string) error {
 		0,
 	)
 	if r == 0 {
+		if createdDir { _ = os.Remove(link) }
 		return winError("create junction", callErr)
 	}
 	return nil
