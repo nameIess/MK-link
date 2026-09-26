@@ -1,0 +1,16 @@
+{
+  "name": "mk-link",
+  "outputfilename": "MK-Link",
+  "frontend:dir": "frontend",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev": "npm run dev",
+  "author": {"name": "nameIess"},
+  "info": {
+    "companyName": "nameIess",
+    "productName": "MK-Link",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright © 2026 nameIess",
+    "comments": "Windows filesystem link utility"
+  }
+}
