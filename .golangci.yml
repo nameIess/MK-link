@@ -1,0 +1,68 @@
+version: "2"
+
+run:
+  concurrency: 4
+  timeout: 5m
+  tests: true
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 50
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - unused
+    - errcheck
+    - errorlint
+    - nilerr
+    - forcetypeassert
+    - copyloopvar
+    - gocritic
+    - revive
+    - whitespace
+    - godot
+    - misspell
+    - dupword
+    - predeclared
+    - errname
+    - asciicheck
+    - gocyclo
+    - nestif
+    - funlen
+    - dupl
+    - unconvert
+    - ineffassign
+    - goconst
+    - gosec
+    - bidichk
+    - containedctx
+    - fatcontext
+    - sloglint
+    - loggercheck
+    - thelper
+    - usetesting
+    - paralleltest
+    - modernize
+    - intrange
+    - usestdlibvars
+    - exhaustive
+    - nolintlint
+
+  settings:
+    dupl:
+      threshold: 100
+    funlen:
+      lines: 120
+      statements: 80
+    gocyclo:
+      min-complexity: 13
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
