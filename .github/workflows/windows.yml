@@ -1,0 +1,32 @@
+name: Windows build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+      - name: Test
+        run: go test ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Generate icon resource
+        shell: pwsh
+        run: |
+          go install github.com/akavel/rsrc@v0.10.2
+          rsrc -ico assets/icon.ico -o app.syso
+      - name: Build
+        run: go build -trimpath -ldflags="-s -w -H=windowsgui" -o mklink.exe .
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          if (-not (Test-Path mklink.exe)) { throw "mklink.exe was not produced" }
+          if ((Get-Item mklink.exe).Length -lt 100KB) { throw "Executable is unexpectedly small" }
