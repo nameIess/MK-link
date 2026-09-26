@@ -24,7 +24,7 @@ go vet ./...
 go build -trimpath -ldflags="-s -w -H=windowsgui" -o mklink.exe .
 ```
 
-For a distributable executable with the supplied `assets/icon.ico`, CI generates the Windows resource before building.
+The GUI loads the repository's supplied `ui/icon.ico` at runtime. Package the `ui` directory alongside `mklink.exe`.
 
 ## Supported systems
 

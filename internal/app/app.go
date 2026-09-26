@@ -82,6 +82,7 @@ var (
 	procMessageBoxW = user32.NewProc("MessageBoxW")
 	procLoadCursorW = user32.NewProc("LoadCursorW")
 	procLoadIconW = user32.NewProc("LoadIconW")
+	procLoadImageW = user32.NewProc("LoadImageW")
 	procGetModuleHandleW = kernel32.NewProc("GetModuleHandleW")
 	procGetOpenFileNameW = comdlg32.NewProc("GetOpenFileNameW")
 	procSHBrowseForFolderW = shell32.NewProc("SHBrowseForFolderW")
@@ -121,7 +122,7 @@ func Run() {
 	class := syscall.StringToUTF16Ptr(className)
 	title := syscall.StringToUTF16Ptr(windowTitle)
 	cursor, _, _ := procLoadCursorW.Call(0, 32512)
-	icon := loadAppIcon(hinst)
+	icon := loadAppIcon()
 
 	wc := wndClassEx{
 		Size: uint32(unsafe.Sizeof(wndClassEx{})), WndProc: syscall.NewCallback(wndProc),
@@ -334,7 +335,16 @@ func chooseFolder(owner uintptr) string {
 	if ok == 0 { return "" }
 	return syscall.UTF16ToString(buf)
 }
-func loadAppIcon(hinst uintptr) uintptr {
-	icon, _, _ := procLoadIconW.Call(hinst, 101)
+func loadAppIcon() uintptr {
+	exe, err := os.Executable()
+	if err != nil {
+		return 0
+	}
+	iconPath := filepath.Join(filepath.Dir(exe), "ui", "icon.ico")
+	p := syscall.StringToUTF16Ptr(iconPath)
+	const imageIcon = 1
+	const lrLoadFromFile = 0x00000010
+	const lrDefaultSize = 0x00000040
+	icon, _, _ := procLoadImageW.Call(0, uintptr(unsafe.Pointer(p)), imageIcon, 32, 32, lrLoadFromFile|lrDefaultSize)
 	return icon
 }
