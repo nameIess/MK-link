@@ -252,7 +252,7 @@ func validateLinkName(name string) error {
 	if strings.HasSuffix(name, " ") || strings.HasSuffix(name, ".") {
 		return errors.New("link name cannot end with a space or period")
 	}
-	if strings.ContainsAny(name, "<>:"/\\|?*") {
+	if strings.ContainsAny(name, "<>:\"/\\\\|?*") {
 		return errors.New("link name contains an invalid Windows filename character")
 	}
 	base := strings.TrimSuffix(strings.ToUpper(name), ".")
