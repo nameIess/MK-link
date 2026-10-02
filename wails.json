@@ -1,0 +1,17 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "mk-link",
+  "outputfilename": "mk-link.exe",
+  "frontend:dir": "frontend",
+  "frontend:install": "npm ci",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "http://localhost:5173",
+  "preBuildHooks": {
+    "windows/*": "powershell -NoProfile -ExecutionPolicy Bypass -File ../../scripts/prepare-icon.ps1"
+  },
+  "info": {
+    "productName": "MK-Link",
+    "comments": "Windows filesystem-link utility built with Wails"
+  }
+}

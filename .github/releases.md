@@ -1,21 +1,28 @@
-## MK-Link
+# MK-Link 🚀
 
-MK-Link is a Windows terminal tool for creating file and directory links.
+> A fast, focused Windows utility for creating filesystem links through a guided native interface.
 
-### Included
+## ✨ Highlights
 
-- Pre-built `mklink.exe` for Windows 10 and Windows 11
-- Symbolic links for files and directories
-- Hard links for files
-- Directory junctions
-- Interactive terminal UI with file and directory browsing
-- Automatic administrator elevation when required
-- Validation for target paths and link types
+- 🔗 Create symbolic links for files and directories
+- 📁 Create directory junctions for local Windows folders
+- 🧱 Create hard links for files on the same volume
+- 🖱️ Pick files and folders with native Windows dialogs
+- 📦 Drag and drop paths from Windows Explorer
+- 🛡️ Validate paths and detect destination conflicts before changes are made
+- ✅ Review the operation before filesystem mutation
+- ⚡ Built with React, TypeScript, Go, and Wails
 
-### Usage
+## 📥 Download
 
-1. Download `mklink.exe` from the release assets.
-2. Run it from a Windows terminal.
-3. Follow the prompts to select the target, link type, and destination.
+Download **`mk-link.exe`** from the assets below and run it on Windows.
 
-Administrator privileges may be required when creating links. Windows Developer Mode can also enable symbolic link creation without elevation in supported configurations.
+## 🖥️ Requirements
+
+- Windows 10 or Windows 11
+- Microsoft Edge WebView2 runtime
+- Some link operations may require administrator privileges depending on Windows policy and the target filesystem
+
+## 🔍 Build verification
+
+This release was built on a Windows GitHub Actions runner and the executable was verified before publishing.

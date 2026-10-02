@@ -1,0 +1,75 @@
+name: Windows verification
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Wails
+        shell: pwsh
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+
+      - name: Wails doctor
+        shell: pwsh
+        run: wails doctor
+
+      - name: Verify source icon
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "ui/icon.svg")) {
+            throw "Missing ui/icon.svg. Add the canonical SVG application icon before building."
+          }
+
+      - name: Frontend dependencies
+        shell: pwsh
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend build
+        shell: pwsh
+        working-directory: frontend
+        run: npm run build
+
+      - name: Go dependencies
+        shell: pwsh
+        run: go mod download
+
+      - name: Go tests
+        shell: pwsh
+        run: go test ./...
+
+      - name: Go vet
+        shell: pwsh
+        run: go vet ./...
+
+      - name: Production build
+        shell: pwsh
+        run: wails build -clean
+
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "build/bin/mk-link.exe")) {
+            throw "mk-link.exe was not produced"
+          }
