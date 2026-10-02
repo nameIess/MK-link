@@ -1,0 +1,44 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install rsrc
+        shell: pwsh
+        run: go install github.com/akavel/rsrc@latest
+
+      - name: Build executable
+        shell: pwsh
+        run: |
+          $env:Path = "$(go env GOPATH)\bin;$env:Path"
+          rsrc -ico ui/icon.ico -o mklink.syso
+          go build -ldflags="-s -w" -o mklink.exe
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: .github/releases.md
+          files: mklink.exe
+          generate_release_notes: false
