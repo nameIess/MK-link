@@ -152,3 +152,7 @@ Desktop.ini
 
 .local/
 .local.*
+# Keep the checked-in Windows application icon; Wails embeds this into the EXE.
+!/build/
+!/build/windows/
+!/build/windows/icon.ico
