@@ -1,127 +1,200 @@
-# 🔗 MK-Link Go
+# MK-Link
 
-A modern, interactive Windows tool for creating symbolic links, hard links, and directory junctions using a terminal user interface (TUI).
+MK-Link is a Windows desktop utility for creating and managing filesystem links through a guided native interface.
 
-## ✨ Features
+It is built for people who need the behavior of Windows links without having to remember the command-line syntax or manually validate every path.
 
-- **📁 Interactive File/Directory Picker**: Browse and select target files or directories with an intuitive TUI interface
-- **🔗 Multiple Link Types**:
-  - **🔄 Symbolic Links**: Standard symlinks for files and directories
-  - **🔗 Hard Links**: Direct file system links (files only)
-  - **🔗 Junctions**: Directory links using Windows reparse points (directories only)
-- **🔐 Automatic Admin Elevation**: Automatically requests administrative privileges when needed
-- **✅ Path Validation**: Ensures target paths exist and validates link creation
-- **💻 Modern TUI**: Built with [Bubble Tea](https://github.com/charmbracelet/bubbletea) for a smooth, responsive experience
+## What it does
 
-## 📋 Requirements
+MK-Link supports three Windows link types:
 
-- 🪟 Windows 10/11 (or Windows Server with symbolic link support)
-- 🐹 Go 1.19+ (for building from source)
-- 🔑 Administrative privileges (required for creating links)
+| Link type | Target | Typical use |
+| --- | --- | --- |
+| **Symbolic link** | File or directory | Flexible references, development paths, compatibility paths |
+| **Hard link** | File only | Multiple filenames pointing to the same file data |
+| **Junction** | Directory only | Redirecting local directories while keeping the original path |
 
-## 📥 Installation
+Before making a filesystem change, MK-Link validates the requested operation and shows a review step. Existing destinations are not overwritten automatically.
 
-### 📦 Option 1: Download Pre-built Binary
+## Features
 
-📥 Download the latest `mklink.exe` from the [releases page](https://github.com/nameIess/MK-link/releases).
+- Guided workflow for choosing a target, link name, and link type
+- Native Windows file and folder pickers
+- Drag and drop from Windows Explorer
+- Pre-flight validation and destination conflict detection
+- Review before filesystem mutation
+- Windows-native filesystem APIs rather than shelling out to `cmd.exe`, `mklink.exe`, or similar commands
+- Clear explanations and restrictions for each link type
+- Dark desktop interface designed for keyboard and mouse use
+- Single-instance application behavior
+- Windows executable produced automatically by GitHub Actions
 
-### 🛠️ Option 2: Build from Source
+## Security-focused behavior
 
-1. Clone the repository:
+Filesystem paths are treated as untrusted input.
 
-   ```bash
-   git clone https://github.com/nameIess/MK-link.git
-   cd MK-link
-   ```
+- User-controlled paths are not inserted into shell commands.
+- Link names reject path separators, alternate data streams, invalid Windows characters, reserved device names, and trailing dots or spaces.
+- Existing destinations are rejected instead of being overwritten automatically.
+- The backend validates the target type again immediately before creating a link.
+- Symbolic links use the Windows native API and request the unprivileged-create flag when supported.
+- Junctions use the Windows reparse-point API.
+- UNC/network targets are rejected where the selected link type requires a local target.
+- Production WebView context menus and developer tools remain disabled.
 
-2. Build the executable:
+## Technology
 
-   ### Option A: Using the build script (recommended)
+- **Backend:** Go
+- **Desktop framework:** Wails v2.15
+- **Frontend:** React + TypeScript
+- **Styling:** Tailwind CSS
+- **Build:** Go 1.26 + Node.js 22
+- **Platform:** Windows 10/11
 
-   ```bash
-   .\build.bat
-   ```
+Wails uses the Windows WebView2 runtime for the application UI.
 
-   This will automatically handle icon embedding, optimization, and UPX packing.
+## Project layout
 
-   ### Option B: Manual build
-
-   ```bash
-   # Generate resource file from icon.ico (if available)
-   rsrc -ico ui/icon.ico -o mklink.syso
-
-   # Build optimized executable
-   go build -ldflags="-s -w" -o mklink.exe
-
-   # Pack with UPX (optional, helps with antivirus)
-   upx --best mklink.exe
-   ```
-
-## 🚀 Usage
-
-1. Run the executable:
-
-   ```bash
-   .\mklink.exe
-   ```
-
-2. If not running as administrator, the tool will automatically request elevation
-
-3. Follow the interactive prompts:
-   - **Select Target**: Browse and choose the file or directory to link to
-   - **Choose Link Type**: Select from available options based on target type
-   - **Enter Link Name**: Provide a name for the new link
-   - **Choose Location**: Select where to create the link
-   - **Confirm**: Review and confirm the link creation
-
-## 🔗 Link Types Explained
-
-### For Files:
-
-- **File Symlink**: Creates a symbolic link that points to the original file
-- **Hard Link**: Creates a direct link to the file's data on disk
-
-### For Directories:
-
-- **Directory Symlink**: Creates a symbolic link that points to the original directory
-- **Junction**: Creates a directory junction using Windows reparse points (local volumes only)
-
-## 🏗️ Building
-
-To build the project:
-
-```bash
-go build -ldflags="-s -w" -o mklink.exe
+```text
+.
+├── frontend/              # React/TypeScript application
+├── internal/
+│   ├── core/              # Validation and link-type rules
+│   └── linker/            # Windows and non-Windows linker implementations
+├── ui/
+│   └── icon.svg           # Source application icon
+├── .github/workflows/     # CI and release automation
+├── app.go                 # Wails application bindings
+├── main.go                # Application entry point
+├── go.mod                 # Go dependencies
+└── wails.json             # Wails project configuration
 ```
 
-The `mklink.syso` file contains the application icon and should be in the same directory as `main.go`.
+### Application icon
 
-## 📦 Dependencies
+The canonical application icon is:
 
-- [Bubble Tea](https://github.com/charmbracelet/bubbletea) - Terminal UI framework
-- [Bubbles](https://github.com/charmbracelet/bubbles) - Bubble Tea components
-- [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Style definitions
+```text
+ui/icon.svg
+```
 
-## 🤝 Contributing
+The build process rasterizes this SVG into Wails' required `build/appicon.png` asset. Wails then generates the Windows icon resources used by the executable.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly (especially on different Windows versions)
-5. Submit a pull request
+Do not replace the SVG with a generated `.ico` file. The SVG is the source asset; generated build files are disposable.
 
-## 📜 License
+## Development
 
-MIT License - see [LICENSE](License) file for details.
+Windows is required for building and running the desktop application.
 
-## ❓ Troubleshooting
+Install:
 
-- **"Access Denied"**: Ensure you're running as administrator
-- **"Symbolic links not supported"**: Enable developer mode in Windows settings or use junctions for directories
-- **UI Issues**: Ensure your terminal supports ANSI colors and has a compatible font
-- **Antivirus Flagging**: Go binaries may trigger false positives due to their nature. The build process strips debug info to minimize this. If issues persist, add the executable to your antivirus exclusions or consider code signing.
+- Go 1.26+
+- Node.js 22+
+- ImageMagick
+- Wails v2.15.0
 
-## 🙏 Credits
+Install the pinned Wails CLI:
 
-Built with [Charm](https://charm.sh/) libraries for the terminal interface.</content>
-<parameter name="filePath">d:\gemini-workspace\MK-Link\README.md
+```powershell
+go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+```
+
+Check the environment:
+
+```powershell
+wails doctor
+```
+
+Run the application in development mode:
+
+```powershell
+wails dev
+```
+
+Build a production executable:
+
+```powershell
+wails build -clean
+```
+
+The executable is written to:
+
+```text
+build/bin/mk-link.exe
+```
+
+## Link type details
+
+### Symbolic link
+
+A symbolic link is a filesystem reference to another file or directory.
+
+Use it when:
+
+- The link should behave as a flexible reference.
+- You are working with development or compatibility paths.
+- The target may be a file or directory.
+
+### Hard link
+
+A hard link is another directory entry for the same file data.
+
+Restrictions:
+
+- Files only.
+- The target and link must be on the same volume.
+
+### Junction
+
+A junction is a Windows directory reparse point.
+
+Use it when:
+
+- You need to redirect a local directory.
+- You want applications to continue using the original path.
+
+Restrictions:
+
+- Directories only.
+- Local targets only; network/UNC targets are rejected.
+
+## Release builds
+
+Pushing a version tag such as `v2.0.1` starts the Windows release workflow.
+
+The workflow:
+
+1. Installs the pinned Wails CLI.
+2. Runs `wails doctor`.
+3. Installs and builds the frontend.
+4. Downloads Go dependencies.
+5. Runs `go test ./...` and `go vet ./...`.
+6. Builds `mk-link.exe` with the canonical SVG icon.
+7. Verifies that the executable exists.
+8. Publishes `mk-link.exe` to the GitHub release.
+
+The release workflow is intentionally Windows-only because MK-Link is a Windows desktop application.
+
+## Manual release checks
+
+Before publishing a release, verify the following on a real Windows 10/11 machine:
+
+- `go test ./...`
+- `go vet ./...`
+- `wails doctor`
+- `wails build -clean`
+- File symbolic-link creation
+- Directory symbolic-link creation
+- Hard-link creation and same-volume rejection
+- Junction creation and UNC rejection
+- Existing destination rejection
+- Invalid and reserved names
+- Unicode and long paths
+- UAC/access-denied behavior
+- Drag and drop from Explorer
+- Native picker behavior
+- Open-in-Explorer behavior
+
+## License
+
+See [License](License).

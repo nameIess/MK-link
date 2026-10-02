@@ -1,10 +1,9 @@
-name: Build and Release
+name: Release
 
 on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,31 +11,36 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
-
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
-          cache: true
+          go-version: "1.26.x"
 
-      - name: Install rsrc
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Wails
         shell: pwsh
-        run: go install github.com/akavel/rsrc@latest
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
 
-      - name: Build executable
+      - name: Build Windows executable
+        shell: pwsh
+        run: wails build -clean
+
+      - name: Verify executable
         shell: pwsh
         run: |
-          $env:Path = "$(go env GOPATH)\bin;$env:Path"
-          rsrc -ico ui/icon.ico -o mklink.syso
-          go build -ldflags="-s -w" -o mklink.exe
+          if (-not (Test-Path "build/bin/mk-link.exe")) {
+            throw "mk-link.exe was not produced"
+          }
 
-      - name: Create GitHub release
+      - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          name: MK-Link ${{ github.ref_name }}
           body_path: .github/releases.md
-          files: mklink.exe
-          generate_release_notes: false
+          files: build/bin/mk-link.exe
+          fail_on_unmatched_files: true
