@@ -1,0 +1,88 @@
+name: Bug Report 🐛
+description: Report an issue to help us improve MK-link.
+assignees: nameIess
+labels: ["BUG", "Invalid"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thank you for reporting a bug! 
+        Please provide as much detail as possible so we can resolve the issue quickly.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🎯 Impact & Severity
+      description: "How serious is this bug?"
+      options:
+        - "Blocks usage completely ❌"
+        - "Partial functionality ⚠️"
+        - "Minor issue 🟡"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🧩 Problem Description
+      description: "Clearly describe the bug. What were you doing when it occurred?"
+      placeholder: |
+        - What did you expect to happen?
+        - What actually happened?
+        - When does it occur? (always / sometimes / specific case)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔁 Steps to Reproduce
+      description: "List the exact steps to reproduce the error."
+      placeholder: |
+        1. Run command 'python main.py'
+        2. Enter credentials...
+        3. Click on 'Download'
+        4. See error...
+    validations:
+      required: false
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 📤 Actual vs Expected Behavior
+      description: "Contrast the result you wanted with the result you got."
+      placeholder: |
+        Expected: Icons downloaded in PNG and ICO format.
+        Actual: Script exits with an error after login.
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 💻 Environment Details
+      description: "Please specify your setup."
+      placeholder: |
+        - OS: [e.g. Windows 11, Ubuntu 22.04, macOS]
+        - Python version: 
+        - MK-link version: 
+        - Mode: [CLI / UI / Headless]
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 🧪 Logs / Error Output
+      description: "Paste terminal output or Tracebacks here."
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🧾 Additional Context
+      description: "Add screenshots, links to related issues, or any other info."
+    validations:
+      required: false
