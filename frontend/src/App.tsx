@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ArrowLeft, ArrowRight, Check, ChevronRight, FolderOpen, Info, ShieldAlert, Sparkles, X } from "lucide-react";
 import { Logo } from "./components/Logo";
 import { StepRail } from "./components/StepRail";
@@ -28,6 +28,7 @@ export default function App() {
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(false);
   const [result,setResult]=useState<CreateLinkResult|null>(null);
+  const targetRequestId = useRef(0);
 
   const selectedType=useMemo(()=>types.find(x=>x.ID===type),[types,type]);
   const linkPath=destination&&name?destination.replace(/[\\/]$/,"")+"\\"+name.trim():"";
@@ -40,12 +41,15 @@ export default function App() {
   },[]);
 
   async function applyTarget(path:string){
+    const requestId = ++targetRequestId.current;
     setError("");
     try{
       const info=await inspectTarget(path);
+      if(requestId!==targetRequestId.current)return;
+      const next=await getTypes(info.Path);
+      if(requestId!==targetRequestId.current)return;
       setTarget(info.Path);
       setTargetKind(info.IsDir?"folder":"file");
-      const next=await getTypes(info.Path);
       setTypes(next);
       setType(next[0]?.ID||"");
       const base=info.Path.split(/[\\/]/).filter(Boolean).pop()||"";
@@ -53,7 +57,9 @@ export default function App() {
       setDestination("");
       setResult(null);
       setStep(1);
-    }catch(e){setError(String(e));}
+    }catch(e){
+      if(requestId===targetRequestId.current)setError(String(e));
+    }
   }
 
   async function chooseFile(){ const p=await chooseTargetFile(); if(p) await applyTarget(p); }
@@ -82,6 +88,7 @@ export default function App() {
   }
 
   function reset(){
+    targetRequestId.current++;
     setStep(0);setTarget("");setTypes([]);setType("");setName("");setDestination("");setError("");setResult(null);
   }
 
