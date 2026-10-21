@@ -230,7 +230,7 @@ export default function App() {
     </footer>
 
     {showAbout&&<div className="dialog-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget)setShowAbout(false);}}>
-      <section className="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title" aria-describedby="about-description">
+      <section className="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title" aria-describedby="about-description" onKeyDown={event=>{if(event.key==="Escape"){setShowAbout(false);return;}if(event.key==="Tab"){event.preventDefault();event.currentTarget.querySelector("button")?.focus();}}}>
         <div className="flex items-start gap-3"><div className="icon-tile"><Info size={19}/></div><div className="min-w-0 flex-1"><h2 id="about-title" className="text-base font-semibold text-slate-100">About MK-Link</h2><p id="about-description" className="mt-2 text-sm leading-6 text-slate-400">A guided Windows utility for creating symbolic links, hard links, and junctions. MK-Link validates the requested operation and uses native Windows filesystem APIs.</p></div></div>
         <div className="mt-5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-xs text-slate-500">Designed to make filesystem links easier to understand and safer to create.</div>
         <div className="mt-5 flex justify-end"><button autoFocus className="btn-primary" onClick={()=>setShowAbout(false)}>Close</button></div>
