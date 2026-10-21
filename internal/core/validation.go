@@ -102,12 +102,22 @@ func ValidateCreateRequest(req CreateLinkRequest) (ValidatedCreateRequest, error
         return ValidatedCreateRequest{}, fmt.Errorf("cannot inspect destination: %w", err)
     }
 
-    targetAbs, _ := filepath.Abs(target.Path)
-    linkAbs, _ := filepath.Abs(linkPath)
-    if strings.EqualFold(filepath.Clean(targetAbs), filepath.Clean(linkAbs)) {
+    // Resolve existing paths before checking containment. Lexical path checks
+    // miss destinations routed through an ancestor junction or symlink.
+    targetAbs, err := filepath.Abs(target.Path)
+    if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve target path: %w", err) }
+    targetResolved, err := filepath.EvalSymlinks(targetAbs)
+    if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve target path: %w", err) }
+    dirAbs, err := filepath.Abs(dir)
+    if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve destination path: %w", err) }
+    dirResolved, err := filepath.EvalSymlinks(dirAbs)
+    if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve destination path: %w", err) }
+
+    resolvedLinkPath := filepath.Join(dirResolved, name)
+    if strings.EqualFold(filepath.Clean(targetResolved), filepath.Clean(resolvedLinkPath)) {
         return ValidatedCreateRequest{}, fmt.Errorf("the link destination cannot be the target itself")
     }
-    if target.IsDir && isPathInside(targetAbs, dir) {
+    if target.IsDir && isPathInside(targetResolved, dirResolved) {
         return ValidatedCreateRequest{}, fmt.Errorf("the link destination cannot be inside the directory it targets; that would create a recursive link")
     }
 
