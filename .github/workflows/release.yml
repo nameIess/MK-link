@@ -26,6 +26,28 @@ jobs:
         shell: pwsh
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
 
+      - name: Frontend dependencies
+        shell: pwsh
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend build
+        shell: pwsh
+        working-directory: frontend
+        run: npm run build
+
+      - name: Go dependencies
+        shell: pwsh
+        run: go mod download
+
+      - name: Go tests
+        shell: pwsh
+        run: go test ./...
+
+      - name: Go vet
+        shell: pwsh
+        run: go vet ./...
+
       - name: Build Windows executable
         shell: pwsh
         run: wails build -clean
