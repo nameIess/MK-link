@@ -209,7 +209,7 @@ export default function App() {
 
           {result?.Success&&<section className="success-card mt-8"><div className="success-icon"><Check size={22}/></div>
             <div className="min-w-0 flex-1"><div className="text-sm font-semibold text-slate-100">Link created successfully</div><div className="mt-1 truncate font-mono text-[11px] text-slate-500">{result.LinkPath}</div></div>
-            <button className="btn-secondary" onClick={()=>openInExplorer(result.LinkPath)}><FolderOpen size={14}/>Open</button></section>}
+            <button className="btn-secondary" onClick={async()=>{try{await openInExplorer(result.LinkPath);}catch(e){setError(String(e));}}}><FolderOpen size={14}/>Open</button></section>}
 
           {error&&<div className="error-card mt-5" role="alert"><ShieldAlert size={17}/><div className="min-w-0 flex-1"><div className="text-xs font-semibold text-red-300">Could not continue</div>
             <div className="mt-1 text-[11px] leading-5 text-red-300/60">{error}</div>
