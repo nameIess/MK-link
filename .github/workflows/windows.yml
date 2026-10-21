@@ -38,8 +38,8 @@ jobs:
       - name: Verify source icon
         shell: pwsh
         run: |
-          if (-not (Test-Path "ui/icon.svg")) {
-            throw "Missing ui/icon.svg. Add the canonical SVG application icon before building."
+          if (-not (Test-Path "build/windows/icon.ico")) {
+            throw "Missing build/windows/icon.ico. Add the checked-in Windows application icon before building."
           }
 
       - name: Frontend dependencies
