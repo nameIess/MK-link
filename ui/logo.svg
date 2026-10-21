@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="100%" height="100%">
+    <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1e1b4b" />
+        </linearGradient>
+        <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#6366f1" />
+        </linearGradient>
+    </defs>
+    <!-- Icon Mark Container -->
+    <g transform="translate(8, 8)">
+        <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bgGrad)" stroke="#334155" stroke-width="2" />
+        <g>
+        <!-- Left Chain Link Ring -->
+        <path d="M25 18H18a10 10 0 0 0-10 10v8a10 10 0 0 0 10 10h7" fill="none" stroke="url(#linkGrad)" stroke-width="5.5" stroke-linecap="round" />
+        <!-- Right Chain Link Ring -->
+        <path d="M39 46h7a10 10 0 0 0 10-10v-8a10 10 0 0 0-10-10h-7" fill="none" stroke="url(#linkGrad)" stroke-width="5.5" stroke-linecap="round" />
+        <!-- Center Symlink Bridge & Arrow -->
+        <path d="M20 32h22" fill="none" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" />
+        <path d="M36 25l8 7-8 7" fill="none" stroke="#38bdf8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+        <!-- Subtle MK Corner Nodes -->
+        <circle cx="18" cy="32" r="2.5" fill="#f8fafc" />
+        </g>
+    </g>
+    <!-- Brand Typography -->
+    <text x="86" y="45" font-family="'Inter', 'Segoe UI', system-ui, sans-serif" font-weight="800" font-size="30" fill="#f8fafc" letter-spacing="-0.8">MK-<tspan fill="#06b6d4">Link</tspan></text>
+    <text x="88" y="63" font-family="'JetBrains Mono', 'Consolas', monospace" font-weight="600" font-size="10.5" fill="#94a3b8" letter-spacing="1.6">SYMLINK &amp; JUNCTION STUDIO</text>
+</svg>
