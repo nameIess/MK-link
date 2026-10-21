@@ -1,7 +1,9 @@
 package core
 
 import (
+    "os"
     "path/filepath"
+    "runtime"
     "testing"
 )
 
@@ -19,4 +21,35 @@ func TestIsPathInside(t *testing.T) {
     if !isPathInside(parent, filepath.Join(parent, "links")) { t.Fatal("expected child path to be inside") }
     if isPathInside(parent, filepath.Join(string(filepath.Separator), "Projects", "Other")) { t.Fatal("expected sibling path to be outside") }
     if isPathInside(parent, filepath.Join(string(filepath.Separator), "Projects", "AppData")) { t.Fatal("prefix-only match must not count as inside") }
+    if runtime.GOOS == "windows" {
+        if !isPathInside(`C:\Projects\App`, `c:\projects\app\links`) {
+            t.Fatal("Windows path containment must ignore case")
+        }
+        if isPathInside(`C:\Projects\App`, `D:\Projects\App\links`) {
+            t.Fatal("different Windows volumes must not be considered contained")
+        }
+    }
+}
+
+func TestValidateCreateRequestRejectsDestinationInsideTargetViaSymlinkAncestor(t *testing.T) {
+    root := t.TempDir()
+    target := filepath.Join(root, "target")
+    if err := os.Mkdir(target, 0o755); err != nil { t.Fatal(err) }
+    child := filepath.Join(target, "child")
+    if err := os.Mkdir(child, 0o755); err != nil { t.Fatal(err) }
+
+    alias := filepath.Join(root, "alias")
+    if err := os.Symlink(target, alias); err != nil {
+        t.Skipf("symlink creation unavailable on this host: %v", err)
+    }
+
+    _, err := ValidateCreateRequest(CreateLinkRequest{
+        TargetPath: target,
+        DestinationDir: filepath.Join(alias, "child"),
+        LinkName: "recursive-link",
+        LinkType: LinkTypeSymbolic,
+    })
+    if err == nil {
+        t.Fatal("expected destination reached through a symlink ancestor to be rejected as recursive")
+    }
 }
