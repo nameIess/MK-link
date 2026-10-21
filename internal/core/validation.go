@@ -5,6 +5,7 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "runtime"
     "strings"
     "unicode"
 )
@@ -112,6 +113,8 @@ func ValidateCreateRequest(req CreateLinkRequest) (ValidatedCreateRequest, error
     if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve destination path: %w", err) }
     dirResolved, err := filepath.EvalSymlinks(dirAbs)
     if err != nil { return ValidatedCreateRequest{}, fmt.Errorf("resolve destination path: %w", err) }
+    targetResolved = comparisonPath(targetResolved)
+    dirResolved = comparisonPath(dirResolved)
 
     resolvedLinkPath := filepath.Join(dirResolved, name)
     if strings.EqualFold(filepath.Clean(targetResolved), filepath.Clean(resolvedLinkPath)) {
@@ -148,14 +151,45 @@ func ValidateLinkName(name string) (string, error) {
     return name, nil
 }
 
+func comparisonPath(path string) string {
+    path = filepath.Clean(path)
+    upper := strings.ToUpper(path)
+    if strings.HasPrefix(upper, `\\?\UNC\`) {
+        path = `\\` + path[len(`\\?\UNC\`):]
+    } else if strings.HasPrefix(path, `\\?\`) {
+        path = strings.TrimPrefix(path, `\\?\`)
+    }
+    return filepath.Clean(path)
+}
+
 func isPathInside(parent, child string) bool {
-    parent = filepath.Clean(parent)
-    child = filepath.Clean(child)
+    parent = comparisonPath(parent)
+    child = comparisonPath(child)
+    if runtime.GOOS == "windows" {
+        parentVolume, childVolume := filepath.VolumeName(parent), filepath.VolumeName(child)
+        if !strings.EqualFold(parentVolume, childVolume) { return false }
+        parentParts := pathComponents(strings.TrimPrefix(parent, parentVolume))
+        childParts := pathComponents(strings.TrimPrefix(child, childVolume))
+        if len(childParts) < len(parentParts) { return false }
+        for i, part := range parentParts {
+            if !strings.EqualFold(part, childParts[i]) { return false }
+        }
+        return true
+    }
     rel, err := filepath.Rel(parent, child)
     if err != nil { return false }
     if rel == "." { return true }
     if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) { return false }
     return !filepath.IsAbs(rel)
+}
+
+func pathComponents(path string) []string {
+    parts := strings.Split(filepath.Clean(path), string(filepath.Separator))
+    result := make([]string, 0, len(parts))
+    for _, part := range parts {
+        if part != "" && part != "." { result = append(result, part) }
+    }
+    return result
 }
 
 func normalizePath(path string) (string, error) {
