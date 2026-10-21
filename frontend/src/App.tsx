@@ -58,6 +58,7 @@ export default function App() {
       if(requestId!==flowRequestId.current)return;
       const next=await getTypes(info.Path);
       if(requestId!==flowRequestId.current)return;
+      if(next.length===0)throw new Error("No compatible link types are available for this target.");
       setTarget(info.Path);
       setTargetKind(info.IsDir?"folder":"file");
       setTypes(next);
