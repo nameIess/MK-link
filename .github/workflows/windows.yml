@@ -6,12 +6,16 @@ on:
       - master
   push:
     branches:
-      - master
       - fix/audit-hardening
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# Keep only the newest verification run for a given PR or branch.
+concurrency:
+  group: windows-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -22,10 +26,14 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26.x"
+          cache: true
+          cache-dependency-path: go.sum
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
         shell: pwsh
